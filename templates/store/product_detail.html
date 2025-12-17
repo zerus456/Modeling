@@ -1,0 +1,351 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+<section class="middle">
+    <div class="container">
+        <div class="row">
+
+            <!-- LEFT: Product Images -->
+            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                <div class="sp-loading">
+                    <img src="{{product.image.url}}" alt="" /><br />LOADING IMAGES
+                </div>
+
+                <div class="sp-wrap">
+                    <a href="{{product.image.url}}">
+                        <img style="height: 600px; width: 100%; object-fit: cover; border-radius: 20px;"
+                             src="{{product.image.url}}" alt="" />
+                    </a>
+
+                    {% for image in product.gallery.all %}
+                        <a href="{{image.image.url}}">
+                            <img src="{{image.image.url}}" alt="" />
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- RIGHT: Product Details -->
+            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                <div class="prd_details">
+
+                    <!-- Category -->
+                    <div class="prt_01 mb-1">
+                        <span class="text-purple bg-light-purple rounded py-1">
+                            {{product.category.title}}
+                        </span>
+                    </div>
+
+                    <!-- Name + Rating + Price -->
+                    <div class="prt_02 mb-3">
+                        <h2 class="ft-bold mb-1">{{product.name}}</h2>
+
+                        <!-- Rating -->
+                        <div class="text-left">
+                            <div class="star-rating align-items-center d-flex justify-content-left mb-1 p-0">
+                                {% if product.average_rating > 0 %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= product.average_rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                <span class="small ms-2">
+                                    ({{ product.reviews.all.count }} Reviews)
+                                </span>
+                            </div>
+
+                            <!-- Price + Stock Badge -->
+                            <div class="elis_rty mt-3">
+
+                                {% if product.regular_price %}
+                                    <span class="ft-medium text-muted line-through fs-md me-3">
+                                        ${{product.regular_price}}
+                                    </span>
+                                {% endif %}
+
+                                <span class="ft-bold theme-cl fs-lg me-3">${{product.price}}</span>
+
+                                <!-- STOCK BADGE (Shopee / Amazon style) -->
+                                {% if product.stock > 10 %}
+                                    <span class="badge bg-success">In Stock</span>
+
+                                {% elif product.stock > 5 %}
+                                    <span class="badge bg-info text-dark">Limited Stock</span>
+
+                                {% elif product.stock > 1 %}
+                                    <span class="badge bg-warning text-dark">Only {{product.stock}} left!</span>
+
+                                {% elif product.stock == 1 %}
+                                    <span class="badge bg-danger text-dark">Only 1 left!</span>
+
+                                {% else %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="prt_03 mb-4">
+                        <p>{{product.description|safe|truncatechars:200}}</p>
+                    </div>
+
+                    <!-- Color Options -->
+                    <div class="mb-2">
+                        <p class="d-flex align-items-center text-dark ft-medium">Color:</p>
+
+                        <div class="text-left">
+                            {% for variant in product.variants.all %}
+                                {% if variant.name == "Color" %}
+                                    {% for c in variant.items.all %}
+                                    <div class="form-check form-option form-check-inline mb-1">
+                                        <input class="form-check-input" value="{{c.title}}" type="radio" name="color" id="{{c.content}}" />
+                                        <label class="form-option-label" for="{{c.content}}">
+                                            <span class="form-option-color" style="background-color: {{c.content}}"></span>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Size Options -->
+                    <div class="prt_04 mb-4">
+                        <p class="d-flex align-items-center text-dark ft-medium">Size:</p>
+
+                        <div class="text-left pb-0 pt-2">
+                            {% for variant in product.variants.all %}
+                                {% if variant.name == "Size" %}
+                                    {% for s in variant.items.all %}
+                                    <div class="form-check size-option form-option form-check-inline mb-2">
+                                        <input class="form-check-input" value="{{s.title}}" type="radio" name="size" id="{{s.content}}" />
+                                        <label class="form-option-label" for="{{s.content}}">{{s.content}}</label>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Quantity + Add to Cart -->
+                    <div class="prt_05 mb-4">
+                        <div class="d-flex gap-3 mb-7">
+
+                            <!-- Quantity -->
+                            <div>
+                                <select class="form-select quantity" name="quantity" id="quantity"
+                                        {% if product.stock <= 0 %} disabled {% endif %}>
+                                    {% for qty in product_stock_range %}
+                                        <option value="{{qty}}">{{qty}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Add to Cart -->
+                            <div>
+                                <button type="button"
+                                        class="btn btn-sm bg-primary text-white rounded add_to_cart"
+                                        data-id="{{product.id}}"
+                                        {% if product.stock <= 0 %} disabled style="opacity:0.5;cursor:not-allowed;" {% endif %}
+                                >
+                                    {% if product.stock > 0 %}
+                                        Add to cart <i class="fas fa-shopping-cart ms-2"></i>
+                                    {% else %}
+                                        Out of Stock
+                                    {% endif %}
+                                </button>
+                            </div>
+
+                            <!-- Wishlist -->
+                            <div>
+                                <button class="btn btn-sm bg-primary text-white rounded">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Low Stock Alerts -->
+                        {% if product.stock <= 5 and product.stock > 0 %}
+                            <p class="text-warning mt-2">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Hurry! Only {{product.stock}} left in stock.
+                            </p>
+                        {% endif %}
+
+                        {% if product.stock == 0 %}
+                            <p class="text-danger mt-2">
+                                <i class="fas fa-times-circle"></i>
+                                This product is currently out of stock.
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Share -->
+                    <div class="prt_06">
+                        <p class="mb-0 d-flex align-items-center">
+                            <span>Share:</span>
+                            <a class="d-inline-flex align-items-center justify-content-center p-3 gray circle fs-sm text-muted ms-2"><i class="fab fa-twitter"></i></a>
+                            <a class="d-inline-flex align-items-center justify-content-center p-3 gray circle fs-sm text-muted ms-2"><i class="fab fa-facebook-f"></i></a>
+                            <a class="d-inline-flex align-items-center justify-content-center p-3 gray circle fs-sm text-muted ms-2"><i class="fab fa-pinterest-p"></i></a>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRODUCT DESCRIPTION TABS -->
+<section class="middle">
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+
+            <div class="col-xl-11 col-lg-12">
+
+                <ul class="nav nav-tabs b-0 d-flex align-items-center justify-content-center simple_tab_links mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#description" data-toggle="tab">Description</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#information" data-toggle="tab">Additional information</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reviews" data-toggle="tab">Reviews</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+
+                    <!-- DESCRIPTION -->
+                    <div class="tab-pane fade show active" id="description">
+                        <div class="description_info">
+                            <p>{{product.description|safe}}</p>
+                        </div>
+                    </div>
+
+                    <!-- ADDITIONAL INFO -->
+                    <div class="tab-pane fade" id="information">
+                        <div class="additionals">
+                            <table class="table">
+                                <tbody>
+                                    {% for variant in product.variants.all %}
+                                        {% if variant.name == "Specifications" %}
+                                            {% for s in variant.items.all %}
+                                            <tr>
+                                                <th class="ft-medium text-dark">{{s.title}}</th>
+                                                <td>{{s.content}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- REVIEWS -->
+                    <div class="tab-pane fade" id="reviews">
+                        <div class="reviews_info">
+                            {% for r in product.reviews.all %}
+                                <div class="single_rev d-flex align-items-start bg-light
+                                            rounded p-3 mb-3">
+                                    <div class="single_rev_caption">
+                                        <h5 class="mb-1">{{r.user.username|title}}</h5>
+                                        <span class="small">{{r.date|date:"d M, Y"}}</span>
+                                        <p class="mt-2">{{r.review}}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- RELATED PRODUCTS -->
+{% if related_products %}
+<section class="middle pt-0">
+    <div class="container">
+
+        <div class="row justify-content-center">
+            <div class="col-xl-12">
+                <div class="sec_title position-relative text-center">
+                    <h3 class="ft-bold pt-3">Related Products</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-center rows-products">
+            {% for p in related_products %}
+            <div class="col-lg-3 mb-3">
+
+                <div class="product_grid card rounded-3 shadow m-2 p-2">
+
+                    <div class="card-body p-0">
+                        <div class="shop_thumb position-relative">
+                            <a href="{% url 'store:product_detail' p.slug %}">
+                                <img src="{{p.image.url}}" style="width:100%; height:230px; object-fit:cover;">
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-footer p-2 bg-white">
+                        <div class="text-left">
+
+                            <div class="elso_titl small">
+                                <a href="{% url 'store:category' p.category.id %}">{{p.category.title}}</a>
+                            </div>
+
+                            <h5 class="fs-md mb-1">
+                                <a href="{% url 'store:product_detail' p.slug %}">{{p.name}}</a>
+                            </h5>
+
+                            <div class="elis_rty">
+                                <span class="ft-bold text-dark fs-sm">${{p.price}}</span>
+                            </div>
+
+                            <!-- Add to Cart (Related Products) -->
+                            <div class="d-flex align-items-center gap-3 mt-2">
+                                <button type="button"
+                                        class="btn btn-sm bg-primary text-white rounded add_to_cart"
+                                        data-id="{{p.id}}"
+                                        {% if p.stock <= 0 %} disabled style="opacity:0.5;" {% endif %}
+                                >
+                                    {% if p.stock > 0 %}
+                                        Add to cart
+                                    {% else %}
+                                        Out of Stock
+                                    {% endif %}
+                                </button>
+
+                                <input type="hidden" class="quantity" value="1">
+
+                                <a href="#" class="add_to_wishlist" data-product_id="{{p.id}}">
+                                    <i class="fas fa-heart fs-4 text-black"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endif %}
+
+{% endblock content %}

@@ -1,0 +1,125 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="gray py-3">
+    <div class="container">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Customer</a></li>
+            <li class="breadcrumb-item active">Order #{{ order.order_id }}</li>
+        </ol>
+    </div>
+</div>
+
+<section class="middle">
+<div class="container">
+<div class="row">
+
+    {% include 'customer/sidebar.html' %}
+
+    <div class="col-lg-8">
+
+        <h4 class="fw-bold mb-4">Order #{{ order.order_id }}</h4>
+
+        <!-- ================= ORDER ITEMS ================= -->
+        <div class="border rounded mb-4">
+
+            {% for item in order.order_items.all %}
+            <div class="row p-3 border-bottom align-items-center">
+
+                <!-- PRODUCT -->
+                <div class="col-md-6 d-flex gap-3">
+                    <img src="{{ item.product.image.url }}" width="80" class="rounded">
+
+                    <div>
+                        <h6 class="mb-1">
+                            <a href="{% url 'store:product_detail' item.product.slug %}">
+                                {{ item.product.name }}
+                            </a>
+                        </h6>
+
+                        <small class="text-muted">
+                            Vendor: <strong>{{ item.product.vendor.store_name }}</strong>
+                        </small><br>
+
+                        {% if item.color %}
+                            <small>Color: {{ item.color }}</small><br>
+                        {% endif %}
+                        {% if item.size %}
+                            <small>Size: {{ item.size }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- STATUS -->
+                <div class="col-md-2 text-center">
+                    <span class="badge bg-light text-dark">
+                        {{ item.order_status }}
+                    </span>
+                </div>
+
+                <!-- PRICE -->
+                <div class="col-md-2 text-center fw-bold">
+                    ${{ item.price|intcomma }}
+                </div>
+
+                <!-- ACTION -->
+                <div class="col-md-2 text-end">
+                    <a href="{% url 'customer:order_item_detail' order.order_id item.item_id %}"
+                       class="btn btn-sm bg-primary text-white">
+                        View
+                    </a>
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- ================= ORDER SUMMARY ================= -->
+        <h5 class="fw-bold mb-2">Order Summary</h5>
+        <ul class="list-group mb-4">
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Sub total</span>
+                <strong>${{ order.sub_total|intcomma }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Shipping</span>
+                <strong>${{ order.shipping|intcomma }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Tax</span>
+                <strong>${{ order.tax|intcomma }}</strong>
+            </li>
+            {% if order.saved %}
+            <li class="list-group-item d-flex justify-content-between text-success">
+                <span>Discount</span>
+                <strong>- ${{ order.saved|intcomma }}</strong>
+            </li>
+            {% endif %}
+            <li class="list-group-item d-flex justify-content-between fw-bold">
+                <span>Total</span>
+                <span>${{ order.total|intcomma }}</span>
+            </li>
+        </ul>
+
+        <!-- ================= SHIPPING INFO ================= -->
+        <h5 class="fw-bold mb-2">Shipping Info</h5>
+        <p class="mb-1">{{ order.address.full_name }}</p>
+        <p class="mb-1">{{ order.address.address }}</p>
+        <p class="mb-1">
+            {{ order.address.city }},
+            {{ order.address.state }},
+            {{ order.address.country }}
+        </p>
+        <p>{{ order.address.mobile }}</p>
+
+    </div>
+</div>
+</div>
+</section>
+
+{% endblock content %}

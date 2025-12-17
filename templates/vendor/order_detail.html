@@ -1,0 +1,49 @@
+{% extends 'vendor/base.html' %}
+{% load humanize %}
+{% block content %}
+
+<section class="middle">
+    <div class="container-fluid">
+        <h4 class="fw-bold mb-4">
+            Order #{{ order.order_id }}
+        </h4>
+
+        {% for item in order_items %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body d-flex justify-content-between">
+
+                    <div class="d-flex gap-3">
+                        <img src="{{ item.product.image.url }}"
+                             width="80"
+                             class="rounded">
+
+                        <div>
+                            <h6 class="fw-bold">{{ item.product.name }}</h6>
+                            <p class="mb-1">
+                                Vendor:
+                                <strong>{{ item.product.vendor.store_name }}</strong>
+                            </p>
+                            <p class="mb-1">Qty: {{ item.qty }}</p>
+                            <p class="mb-1">Price: ${{ item.price }}</p>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <span class="badge bg-warning text-dark">
+                            {{ item.order_status }}
+                        </span>
+                        <br>
+                        <a href="{% url 'vendor:order_item_detail' order.order_id item.item_id %}"
+                           class="btn btn-sm btn-outline-primary mt-2">
+                            Manage
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        {% endfor %}
+
+    </div>
+</section>
+
+{% endblock %}

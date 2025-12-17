@@ -1,0 +1,72 @@
+{% for p in products %}
+<div class="col-lg-4">
+    <div class="product_grid card rounded-3 shadow m-2 p-2">
+
+        <div class="card-body p-0">
+            <div class="shop_thumb position-relative">
+                <a class="card-img-top d-block overflow-hidden" href="{% url 'store:product_detail' p.slug %}">
+                    <img src="{{p.image.url}}" style="width:100%; height:230px; object-fit:cover;">
+                </a>
+            </div>
+        </div>
+
+        <div class="card-footer p-2 bg-white">
+            <div class="text-left">
+
+                <div class="small">
+                    <a href="{% url 'store:category' p.category.id %}">{{p.category.title}}</a>
+                </div>
+
+                <h5 class="fs-md mb-1">
+                    <a href="{% url 'store:product_detail' p.slug %}">{{p.name}}</a>
+                </h5>
+
+                <!-- STOCK BADGE (Shopee/Amazon logic) -->
+                {% if p.stock > 10 %}
+                    <span class="badge bg-success mb-1">In Stock</span>
+
+                {% elif p.stock > 5 %}
+                    <span class="badge bg-info text-dark mb-1">Limited Stock</span>
+
+                {% elif p.stock > 1 %}
+                    <span class="badge bg-warning text-dark mb-1">Only {{p.stock}} left!</span>
+
+                {% elif p.stock == 1 %}
+                    <span class="badge bg-danger text-dark mb-1">Only 1 left!</span>
+
+                {% else %}
+                    <span class="badge bg-danger mb-1">Out of Stock</span>
+                {% endif %}
+
+                <div class="elis_rty">
+                    <span class="ft-bold text-dark fs-sm">${{p.price}}</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mt-2">
+
+                    <!-- ADD TO CART BUTTON -->
+                    <button type="button"
+                        class="btn btn-sm bg-primary text-white rounded add_to_cart"
+                        data-id="{{p.id}}"
+                        {% if p.stock <= 0 %} disabled style="opacity:0.5; cursor:not-allowed;" {% endif %}>
+
+                        {% if p.stock > 0 %}
+                            Add to cart <i class="fas fa-shopping-cart ms-2"></i>
+                        {% else %}
+                            Out of Stock
+                        {% endif %}
+                    </button>
+
+                    <a href="#" class="me-2 add_to_wishlist" data-product_id="{{p.id}}">
+                        <i class="fas fa-heart fs-4 text-dark"></i>
+                    </a>
+
+                    <input type="hidden" class="quantity" value="1">
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endfor %}

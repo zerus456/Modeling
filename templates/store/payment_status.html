@@ -1,0 +1,77 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+
+<div class="gray py-3">
+    <div class="container">
+        <div class="row">
+            <div class="colxl-12 col-lg-12 col-md-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'store:shop' %}">Shop</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'store:cart' %}">Cart</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'store:checkout' order.order_id %}">Checkout</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Payment Status</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="middle" style="margin-bottom: 600px;">
+    <div class="container">
+        <div class="row justify-content-center">
+            
+        </div>
+        <div class="row justify-content-center">
+
+            {% if payment_status == "paid" %}
+            <!-- SUCCESS -->
+            <div class="col-12 col-md-10 col-lg-8 col-xl-6 text-center">
+                <div class="p-4 d-inline-flex align-items-center justify-content-center circle bg-light-primary text-success mx-auto mb-4">
+                    <i class="fas fa-heart fs-lg"></i>
+                </div>
+                <h2 class="mb-2 ft-bold">Order Completed!</h2>
+                <p class="ft-regular fs-md mb-5">
+                    Your order <span class="text-body text-dark fw-bold">#{{ order.order_id }}</span> has been completed.<br>
+                    We have sent the order details to your email.
+                </p>
+                <a href="{% url 'customer:order_detail' order.order_id %}" class="btn btn-sm rounded text-white bg-success">View Order Details</a>
+            </div>
+            {% elif payment_status == "processing" %}
+            <!-- PROCESSING -->
+            <div class="col-12 col-md-10 col-lg-8 col-xl-6 text-center">
+                <div class="p-4 d-inline-flex align-items-center justify-content-center circle bg-warning bg-opacity-25 text-warning mx-auto mb-4">
+                    <i class="fas fa-hourglass-half fs-lg"></i>
+                </div>
+                <h2 class="mb-2 ft-bold">Order Received!</h2>
+                <p class="ft-regular fs-md mb-5">
+                    Thank you for your purchase. Your order is now being processed.<br>
+                    We will contact you to arrange delivery and collect payment on delivery.
+                </p>
+                <a href="{% url 'customer:order_detail' order.order_id %}" class="btn btn-sm rounded text-white bg-warning">View Order Details</a>
+            </div>
+            {% elif payment_status == "failed" %}
+            <!-- FAILED -->
+            <div class="col-12 col-md-10 col-lg-8 col-xl-6 text-center">
+                <div class="p-4 d-inline-flex align-items-center justify-content-center circle bg-light-danger text-danger mx-auto mb-4">
+                    <i class="fas fa-ban fs-lg"></i>
+                </div>
+                <h2 class="mb-2 ft-bold">Payment Failed!</h2>
+                <p class="ft-regular fs-md mb-5">
+                    Unfortunately, we could not complete your order. Please try again later.
+                </p>
+                <a href="{% url 'store:checkout' order.order_id %}" class="btn btn-sm rounded text-white bg-danger">
+                    Try Again <i class="fas fa-rotate ms-2"></i>
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+{% endblock content %}

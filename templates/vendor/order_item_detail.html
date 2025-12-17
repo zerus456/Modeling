@@ -1,0 +1,128 @@
+{% extends 'vendor/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<section class="middle">
+    <div class="container-fluid">
+        <div class="row align-items-start justify-content-between">
+
+            {% include 'vendor/sidebar.html' %}
+
+            <div class="col-12 col-md-12 col-lg-9 col-xl-10">
+
+                <!-- HEADER -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="fw-bold">Order Number: #{{ order.order_id }}</h4>
+                        <a href="{% url 'vendor:order_detail' order.order_id %}" class="btn bg-light btn-sm rounded">
+                            <i class="fas fa-arrow-left me-1"></i> View Order
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ORDER ITEM CARD -->
+                <div class="order-data">
+                    <div class="ord_list_wrap border mb-4">
+                        <div class="ord_list_body text-left p-3">
+                            <div class="row align-items-center m-0 py-3 br-bottom">
+
+                                <!-- PRODUCT IMAGE + INFO -->
+                                <div class="col-xl-6 col-lg-5 col-md-6 col-12">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="cart_selected_single_thumb">
+                                            <a href="{% url 'store:product_detail' item.product.slug %}">
+                                                <img src="{{ item.product.image.url }}" width="80" class="img-fluid rounded" alt="" />
+                                            </a>
+                                        </div>
+
+                                        <div>
+                                            <h5 class="product_title fs-md fw-bold mb-1">
+                                                <a href="{% url 'store:product_detail' item.product.slug %}">
+                                                    {{ item.product.name }}
+                                                </a>
+                                            </h5>
+
+                                            <p class="mb-1">
+                                                <strong>Vendor:</strong> {{ item.product.vendor.store_name }}
+                                            </p>
+
+                                            {% if item.color %}
+                                                <p class="mb-1"><strong>Color:</strong> {{ item.color }}</p>
+                                            {% endif %}
+                                            {% if item.size %}
+                                                <p class="mb-1"><strong>Size:</strong> {{ item.size }}</p>
+                                            {% endif %}
+
+                                            <p class="fw-bold mb-0">${{ item.price }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- STATUS -->
+                                <div class="col-xl-2 col-lg-3 col-md-3 col-6">
+                                    <p class="text-muted mb-1">Status</p>
+                                    <span class="badge bg-light text-dark px-3 py-1">{{ item.order_status }}</span>
+                                </div>
+
+                                <!-- PAYMENT -->
+                                <div class="col-xl-2 col-lg-3 col-md-3 col-6">
+                                    <p class="text-muted mb-1">Payment Status</p>
+                                    <h6 class="mb-0">{{ order.payment_status }}</h6>
+                                </div>
+
+                                <!-- DATE -->
+                                <div class="col-xl-2 col-lg-3 col-md-3 col-6">
+                                    <p class="text-muted mb-1">Order Date</p>
+                                    <h6 class="mb-0">{{ order.date }}</h6>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SHIPPING UPDATE FORM -->
+                    <div class="shadow p-4 rounded bg-white">
+                        <h5 class="fw-bold mb-3">Shipping Information</h5>
+
+                        <form action="{% url 'vendor:update_order_item_status' order.order_id item.item_id %}" method="POST">
+                            {% csrf_token %}
+
+                            <!-- SHIPPING STATUS -->
+                            <label class="fw-semibold mb-2">Shipping Status</label>
+                            <select name="order_status" class="form-select mb-4">
+                                <option value="Pending"    {% if item.order_status == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Processing" {% if item.order_status == 'Processing' %}selected{% endif %}>Processing</option>
+                                <option value="Shipped"    {% if item.order_status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                <option value="Fulfilled"  {% if item.order_status == 'Fulfilled' %}selected{% endif %}>Fulfilled</option>
+                                <option value="Cancelled"  {% if item.order_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+
+                            <!-- SHIPPING SERVICE -->
+                            <label class="fw-semibold mb-2">Shipping Service</label>
+                            <select name="shipping_service" class="form-select mb-4">
+                                <option value="" disabled>--- Select Shipping Service ---</option>
+                                <option value="DHL"            {% if item.shipping_service == 'DHL' %}selected{% endif %}>DHL</option>
+                                <option value="FedX"           {% if item.shipping_service == 'FedX' %}selected{% endif %}>FedX</option>
+                                <option value="UPS"            {% if item.shipping_service == 'UPS' %}selected{% endif %}>UPS</option>
+                                <option value="GIG Logistics" {% if item.shipping_service == 'GIG Logistics' %}selected{% endif %}>GIG Logistics</option>
+                            </select>
+
+                            <!-- TRACKING ID -->
+                            <label class="fw-semibold mb-2">Tracking ID</label>
+                            <input type="text" name="tracking_id" class="form-control mb-4" placeholder="Tracking ID"
+                                   value="{{ item.tracking_id|default:'' }}">
+
+                            <button type="submit" class="btn btn-primary rounded w-100">
+                                Save Shipping Info <i class="fas fa-save ms-2"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock content %}

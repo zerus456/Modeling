@@ -1,0 +1,148 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="gray py-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Customer</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Orders</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="middle">
+    <div class="container">
+        <div class="row align-items-start justify-content-between">
+
+            {% include 'customer/sidebar.html' %}
+
+            <div class="col-12 col-md-12 col-lg-8 col-xl-8">
+                <div class="row mb-4">
+                    <h4 class="mb-0 mb-4 fw-bold">Orders</h4>
+                </div>
+
+                {% for order in orders %}
+                <div class="ord_list_wrap border mb-4 mfliud">
+
+                    <!-- ORDER HEADER -->
+                    <div class="ord_list_head bg-light bg-opacity-10 d-flex align-items-center justify-content-between px-3 py-3">
+                        <div>
+                            <p class="m-0 text-muted">Order Number</p>
+                            <h6 class="mb-0 fw-bold">#{{ order.order_id }}</h6>
+                        </div>
+                        <div>
+                            <a href="{% url 'customer:order_detail' order.order_id %}"
+                               class="btn btn-sm bg-primary text-white rounded">
+                                View Order <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+
+                            {% if order.payment_status == "Failed" %}
+                            <a href="{% url 'store:checkout' order.order_id %}"
+                               class="btn btn-sm bg-danger text-white rounded">
+                                Retry Payment <i class="fas fa-rotate ms-2"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ORDER ITEMS -->
+                    <div class="ord_list_body text-left">
+
+                        {% for item in order.order_items.all %}
+                        <div class="row align-items-center m-0 py-4 br-bottom">
+
+                            <!-- PRODUCT -->
+                            <div class="col-xl-6 col-lg-5 col-md-5 col-12">
+                                <div class="cart_single d-flex gap-3">
+                                    <div>
+                                        <a href="{% url 'store:product_detail' item.product.slug %}">
+                                            <img src="{{ item.product.image.url }}"
+                                                 width="75"
+                                                 class="img-fluid rounded"
+                                                 alt="">
+                                        </a>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="fs-sm fw-medium mb-1">
+                                            <a href="{% url 'store:product_detail' item.product.slug %}">
+                                                {{ item.product.name }}
+                                            </a>
+                                        </h4>
+
+                                        <!-- ✅ FIXED VENDOR -->
+                                        <p class="mb-2">
+                                            <span class="text-dark">
+                                                Vendor: {{ item.product.vendor.store_name }}
+                                            </span><br>
+
+                                            {% if item.color %}
+                                                <span class="text-dark">Color: {{ item.color }}</span><br>
+                                            {% endif %}
+
+                                            {% if item.size %}
+                                                <span class="text-dark">Size: {{ item.size }}</span>
+                                            {% endif %}
+                                        </p>
+
+                                        <h4 class="fs-sm fw-bold mb-0">${{ item.price }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STATUS -->
+                            <div class="col-xl-2 col-lg-3 col-md-3 col-6">
+                                <p class="mb-1 text-muted">Status</p>
+                                <span class="badge bg-warning text-dark">
+                                    {{ order.order_status }}
+                                </span>
+                            </div>
+
+                            <!-- PAYMENT -->
+                            <div class="col-xl-2 col-lg-4 col-md-4 col-6">
+                                <p class="mb-1 text-muted">Payment</p>
+                                <h6 class="mb-0 fs-sm">{{ order.payment_status }}</h6>
+                            </div>
+
+                            <!-- DATE -->
+                            <div class="col-xl-2 col-lg-4 col-md-4 col-6">
+                                <p class="mb-1 text-muted">Order Date</p>
+                                <h6 class="mb-0 fs-sm">{{ order.date }}</h6>
+                            </div>
+
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="ord_list_footer d-flex justify-content-between px-3 py-2 br-top">
+                        <p class="mb-0 text-muted">
+                            Paid using {{ order.payment_method }}
+                        </p>
+                        <h5 class="mb-0 fw-bold">
+                            Total: ${{ order.total|floatformat:2|intcomma }}
+                        </h5>
+                    </div>
+
+                </div>
+                {% empty %}
+                    <p>No orders yet.</p>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock content %}
