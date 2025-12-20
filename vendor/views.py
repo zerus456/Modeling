@@ -163,6 +163,7 @@ def orders(request):
             vendor=request.user,
             order__payment_status__in=["Paid", "Processing"]
         )
+        .exclude(order_status="Cancelled") 
         .order_by("-date")
     )
 
@@ -257,19 +258,21 @@ from django.urls import reverse
 
 @login_required
 @vendor_required
-def delete_order(request, order_id):
-    order = get_object_or_404(
-        store_models.Order,
-        vendors=request.user,
-        order_id=order_id,
-        payment_status__in=["Paid", "Processing"],
+def cancel_order_item(request, order_id, item_id):
+    item = get_object_or_404(
+        store_models.OrderItem,
+        item_id=item_id,
+        vendor=request.user,
+        order__order_id=order_id,
     )
 
     if request.method == "POST":
-        order.delete()
-        return redirect(f"{reverse('vendor:orders')}?deleted=true")
+        item.order_status = "Cancelled"
+        item.save()
+        messages.success(request, "Order item cancelled successfully")
 
-    return render(request, "vendor/confirm_delete_order.html", {"order": order})
+    return redirect("vendor:orders")
+
 
 
 

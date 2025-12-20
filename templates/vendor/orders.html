@@ -7,7 +7,7 @@
 <section class="middle">
     <div class="container-fluid">
         <div class="row justify-content-between">
-            
+
             {% include 'vendor/sidebar.html' %}
 
             <div class="col-12 col-md-12 col-lg-9 col-xl-10">
@@ -18,70 +18,127 @@
                 <div class="card shadow-sm mb-4 border-0">
                     <div class="card-body">
 
-                        <!-- ORDER HEADER -->
+                        <!-- ================= ORDER HEADER ================= -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <p class="text-muted m-0">Order Number</p>
-                                <h6 class="fw-bold mb-0">#{{ item.order.order_id }}</h6>
+                                <h6 class="fw-bold mb-0">
+                                    #{{ item.order.order_id }}
+                                </h6>
                             </div>
 
-                            <a href="{% url 'vendor:order_item_detail' item.order.order_id item.item_id %}"
-                               class="btn btn-primary btn-sm text-white rounded">
-                                View Item <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
-                        </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <!-- VIEW ITEM -->
+                                <a href="{% url 'vendor:order_item_detail' item.order.order_id item.item_id %}"
+                                   class="btn btn-primary btn-sm text-white rounded">
+                                    View Item <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
 
-                        <!-- CUSTOMER INFO -->
+                                <!-- CANCEL ITEM -->
+                                {% if item.order_status != "Cancelled" %}
+                                <form method="post"
+                                      action="{% url 'vendor:cancel_order_item' item.order.order_id item.item_id %}"
+                                      class="m-0 p-0 d-inline"
+                                      onsubmit="return confirm('Are you sure you want to cancel this item?');">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm rounded">
+                                        Cancel
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- ================= END ORDER HEADER ================= -->
+
+                        <!-- ================= CUSTOMER INFO ================= -->
                         <div class="bg-light p-3 rounded mb-4">
                             <h6 class="fw-bold mb-2">Customer Information</h6>
-                            <p class="mb-1"><strong>Name:</strong> {{ item.order.customer.profile.full_name }}</p>
-                            <p class="mb-1"><strong>Email:</strong> {{ item.order.customer.email }}</p>
-                            <p class="mb-1"><strong>Phone:</strong> {{ item.order.address.mobile }}</p>
+                            <p class="mb-1">
+                                <strong>Name:</strong>
+                                {{ item.order.customer.profile.full_name }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Email:</strong>
+                                {{ item.order.customer.email }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Phone:</strong>
+                                {{ item.order.address.mobile }}
+                            </p>
                             <p class="mb-0">
                                 <strong>Address:</strong>
                                 {{ item.order.address.address }},
                                 {{ item.order.address.city }},
                                 {{ item.order.address.state }},
-                                {{ item.order.address.country }} - {{ item.order.address.zip_code }}
+                                {{ item.order.address.country }}
+                                - {{ item.order.address.zip_code }}
                             </p>
                         </div>
 
-                        <!-- PRODUCT ROW -->
+                        <!-- ================= PRODUCT ROW ================= -->
                         <div class="row align-items-center">
 
                             <!-- PRODUCT IMAGE -->
                             <div class="col-md-2 col-4">
-                                <img src="{{ item.product.image.url }}" class="img-fluid rounded border" />
+                                <img src="{{ item.product.image.url }}"
+                                     class="img-fluid rounded border" />
                             </div>
 
                             <!-- PRODUCT INFO -->
                             <div class="col-md-6 col-8">
-                                <h6 class="fw-bold mb-1">{{ item.product.name }}</h6>
+                                <h6 class="fw-bold mb-1">
+                                    {{ item.product.name }}
+                                </h6>
 
                                 {% if item.color %}
-                                <p class="mb-1"><strong>Color:</strong> {{ item.color }}</p>
-                                {% endif %}
-                                
-                                {% if item.size %}
-                                <p class="mb-1"><strong>Size:</strong> {{ item.size }}</p>
+                                <p class="mb-1">
+                                    <strong>Color:</strong> {{ item.color }}
+                                </p>
                                 {% endif %}
 
-                                <p class="mb-1"><strong>Price:</strong> ${{ item.price }}</p>
+                                {% if item.size %}
+                                <p class="mb-1">
+                                    <strong>Size:</strong> {{ item.size }}
+                                </p>
+                                {% endif %}
+
+                                <p class="mb-1">
+                                    <strong>Price:</strong> ${{ item.price }}
+                                </p>
                             </div>
 
                             <!-- STATUS + PAYMENT + DATE -->
                             <div class="col-md-4 text-end">
                                 <p class="text-muted mb-1">Shipping Status</p>
-                                <span class="badge bg-warning text-dark px-3 py-1">{{ item.order_status }}</span>
 
-                                <p class="text-muted mt-3 mb-1">Payment Status</p>
-                                <span class="fw-bold">{{ item.order.payment_status }}</span>
+                                {% if item.order_status == "Cancelled" %}
+                                    <span class="badge bg-danger px-3 py-1">
+                                        Cancelled
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark px-3 py-1">
+                                        {{ item.order_status }}
+                                    </span>
+                                {% endif %}
 
-                                <p class="text-muted mt-3 mb-1">Order Date</p>
-                                <span>{{ item.order.date }}</span>
+                                <p class="text-muted mt-3 mb-1">
+                                    Payment Status
+                                </p>
+                                <span class="fw-bold">
+                                    {{ item.order.payment_status }}
+                                </span>
+
+                                <p class="text-muted mt-3 mb-1">
+                                    Order Date
+                                </p>
+                                <span>
+                                    {{ item.order.date|date:"M d, Y H:i" }}
+                                </span>
                             </div>
 
                         </div>
+                        <!-- ================= END PRODUCT ROW ================= -->
 
                     </div>
                 </div>

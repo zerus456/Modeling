@@ -59,8 +59,9 @@ urlpatterns = [
         name="delete_product"
     ),
     path(
-        "delete_order/<order_id>/",
-        views.delete_order,
-        name="delete_order"
+    "orders/<str:order_id>/items/<str:item_id>/cancel/",
+    views.cancel_order_item,
+    name="cancel_order_item"
     ),
+
 ]
