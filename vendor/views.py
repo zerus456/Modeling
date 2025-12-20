@@ -128,19 +128,25 @@ def dashboard(request):
 @login_required
 @vendor_required
 def products(request):
-    try:
-        vendor = request.user.vendor
-    except vendor_models.Vendor.DoesNotExist:
-        messages.error(request, "Bạn chưa có tài khoản Vendor!")
-        return redirect("vendor:dashboard")
+    vendor = request.user.vendor
+    search = request.GET.get("search")
 
     products_qs = store_models.Product.objects.filter(vendor=vendor)
+
+    # 🔍 SEARCH THEO TÊN PRODUCT
+    if search:
+        products_qs = products_qs.filter(name__icontains=search)
+
     products = paginate_queryset(request, products_qs, 10)
 
     return render(
         request,
         "vendor/products.html",
-        {"products": products, "products_list": products_qs},
+        {
+            "products": products,
+            "products_list": products_qs,
+            "search": search,
+        },
     )
 
 # --------------------------------------------------
@@ -150,33 +156,43 @@ def products(request):
 # VENDOR ORDERS (FIXED)
 # =========================
 
+from django.db.models import Prefetch
+
 @login_required
 @vendor_required
 def orders(request):
-    """
-    Vendor chỉ xem OrderItem của chính mình
-    """
-    order_items_qs = (
+    search = request.GET.get("search")
+
+    order_items = (
         store_models.OrderItem.objects
-        .select_related("order", "product", "product__vendor")
+        .select_related("order", "product")
         .filter(
             vendor=request.user,
             order__payment_status__in=["Paid", "Processing"]
         )
-        .exclude(order_status="Cancelled") 
-        .order_by("-date")
+        .order_by("-order__date")
     )
 
-    order_items = paginate_queryset(request, order_items_qs, 10)
+    #  SEARCH BY ORDER ID (ĐÚNG)
+    if search:
+        order_items = order_items.filter(order__order_id__icontains=search)
+
+    # 🔥 GOM ORDER (KHÔNG BỊ TÁCH)
+    orders = {}
+    for item in order_items:
+        orders.setdefault(item.order.id, item.order)
 
     return render(
         request,
         "vendor/orders.html",
         {
-            "order_items": order_items,
-            "order_items_list": order_items_qs,
+            "orders": orders.values(),
+            "search": search,
         }
     )
+
+
+
 
 
 @login_required
